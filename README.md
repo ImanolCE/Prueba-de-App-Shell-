@@ -18,6 +18,7 @@ Incluye Service Worker y manifest con íconos/colores, y funciona sin conexión.
         └── 📁icons
             ├── icon-192.png
             ├── icon-512.png
+        ├── manifest.json
         ├── products.json
         ├── vite.svg
     └── 📁src
@@ -40,29 +41,30 @@ Incluye Service Worker y manifest con íconos/colores, y funciona sin conexión.
 
 ## Instalación y ejecución
 
-- 1) instalar dependencias
+    - Desarrollo (rápido)
+        - 1.instalar dependencias
+            npm install
+        - 2. correr 
+            npm run dev
+            - abrir http://localhost:5173
 
-    npm install
-
-- 2) correr  (con Service Worker habilitado)
-
-    npm run dev
-
-    - abrir http://localhost:5173
+    - Pruebas OFFLINE
+        - npm install
+        - npm run build
+        - npm run preview
+            - abrir http://localhost:4173
 
 ---
 
 # Cómo probar sin conexión (paso a paso)
 
-1. Abrir http://localhost:5173.
+1. Abrir http://localhost:4173 (modo preview)
 
 2. Navegar a Productos (esto solicita /products.json).
 
-    - Nota: en este proyecto el JSON está en precache, así que estará disponible offline desde el primer intento.
-
 3. Abrir DevTools → pestaña Application:
 
-    - Service Workers: confirmar que este en activated and running para http://localhost:5173.
+    - Service Workers: confirmar que este en activated and running para http://localhost:4173.
     - Cache Storage: verificar que existen los cachés y que incluyen products.json y los assets del shell.
     - Manifest: revisar nombre, short_name, theme_color, background_color e íconos 192/512.
 
@@ -73,7 +75,6 @@ Incluye Service Worker y manifest con íconos/colores, y funciona sin conexión.
     - El App Shell (encabezado, menú, pie y contenedor) debe renderizarse desde caché.
     - La vista Productos debe mostrar la lista desde el caché del JSON
 
-    Nota: El manifest es generado por vite-plugin-pwa e inyectado como manifest.webmanifest
 
 ---
 
