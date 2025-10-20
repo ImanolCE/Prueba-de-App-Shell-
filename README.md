@@ -1,6 +1,6 @@
 # PWA App Shell – Demo (React + Vite)
 
-Mini PWA que implementa el patrón App Shell: encabezado, menú, pie de página y una vista con contenido dinámico. 
+PWA que implementa el patrón App Shell: encabezado, menú, pie de página y una vista con contenido dinámico. 
 Incluye Service Worker y manifest con íconos/colores, y funciona sin conexión.
 
 ## Tecnologías
@@ -10,22 +10,19 @@ Incluye Service Worker y manifest con íconos/colores, y funciona sin conexión.
 
 ---
 
-## Estructura relevante
+## Estructura de Archvivos
 
 ```
 └── 📁pwa-app-shell
-    └── 📁dev-dist
-        ├── sw.js
-        ├── workbox-706c6701.js
     └── 📁public
+        └── 📁icons
+            ├── icon-192.png
+            ├── icon-512.png
         ├── products.json
         ├── vite.svg
     └── 📁src
         └── 📁assets
             ├── react.svg
-        └── 📁icons
-            ├── icon-192.png
-            ├── icon-512.png
         ├── App.css
         ├── App.jsx
         ├── index.css
@@ -37,10 +34,8 @@ Incluye Service Worker y manifest con íconos/colores, y funciona sin conexión.
     ├── package-lock.json
     ├── package.json
     ├── README.md
-    ├── server.js
     └── vite.config.js
 ```
-
 ---
 
 ## Instalación y ejecución
@@ -78,14 +73,17 @@ Incluye Service Worker y manifest con íconos/colores, y funciona sin conexión.
     - El App Shell (encabezado, menú, pie y contenedor) debe renderizarse desde caché.
     - La vista Productos debe mostrar la lista desde el caché del JSON
 
+    Nota: El manifest es generado por vite-plugin-pwa e inyectado como manifest.webmanifest
+
 ---
 
 ## Arquitectura y decisiones
 
 - App Shell: UI mínima cacheada (topbar, sidebar/tabbar responsiva, footer y <main> con vistas).
 
-- Service Worker: generado por vite-plugin-pwa con registerType: autoUpdate y devOptions.enabled: true para que funcione en npm run dev.
+- Service Worker: 
+generado por vite-plugin-pwa con registerType.AutoUpdate y devOptions.enabled: true para que funcione en npm run dev.
 
 - Precache: en vite.config.js se incluyen icons/ y products.json dentro de includeAssets para que estén disponibles offline.
 
-- Contenido dinámico: la vista Productos hace fetch('/products.json') (mock local). Esto simula una API (productos/noticias/tareas) dentro del App Shell.
+- Contenido dinámico: la vista Productos hace fetch('/products.json') (mock local). Esto simula una API (productos) dentro del App Shell.

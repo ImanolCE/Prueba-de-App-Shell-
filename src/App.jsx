@@ -142,7 +142,7 @@ export default function App(){
       <SideBar/>
       <TabBar/>
       <main className="main">{View}</main>
-      <footer className="footer">© 2025 PWA Demo</footer>
+      <footer className="footer">Actividad 3: PWA - Prueba de App Shell </footer>
     </div>
   )
 }
