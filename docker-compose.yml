@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  blue-app:
+    build:
+      context: .
+      dockerfile: docker/blue/Dockerfile
+    container_name: blue-app
+    ports:
+      - "127.0.0.1:8081:80"   # solo accesible desde la VM
+    restart: unless-stopped
+
+  green-app:
+    build:
+      context: .
+      dockerfile: docker/green/Dockerfile
+    container_name: green-app
+    ports:
+      - "127.0.0.1:8082:80"
+    restart: unless-stopped

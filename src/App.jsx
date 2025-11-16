@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import './styles.css'
 
+const version = import.meta.env.VITE_APP_VERSION ?? 'UNKNOWN';
+
 function NavLink({ href, icon, label }) {
   const active = (typeof window !== 'undefined') && window.location.hash === href
   return (
@@ -86,6 +88,11 @@ function Productos(){
   return (
     <div className="container">
       <header className="card">
+        <h1>App Shell PWA - Blue/Green</h1>
+          <p>
+            Versión activa: <strong>{version.toUpperCase()}</strong>
+          </p>
+
         <h2 className="m0">Productos</h2>
         <p className="mt8">Ejemplo de contenido dinámico dentro del App Shell.</p>
       </header>
