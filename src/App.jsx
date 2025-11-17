@@ -20,14 +20,21 @@ function TopBar(){
         <div className="logo" />
         <div>PWA App&nbsp;Shell</div>
         <span className="badge">Offline Ready</span>
+        {/* etiqueta con la versión */}
+        <span className="version-pill">
+          Versión: <strong>{version.toUpperCase()}</strong>
+        </span>
       </div>
       <div className="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+        </svg>
         <input placeholder="Buscar..." />
       </div>
     </div>
   )
 }
+
 
 function SideBar(){
   return (
