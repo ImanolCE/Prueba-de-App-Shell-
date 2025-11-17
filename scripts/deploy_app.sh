@@ -59,7 +59,11 @@ echo " Smoke test exitoso"
 
 # 4. Actualizar el Nginx para apuntar al nuevo upstream
 echo " Actualizando Nginx para apuntar a app-$TARGET_COLOR ..."
-sudo sed -i "s|http://127.0.0.1:[0-9]\+|http://127.0.0.1:${TARGET_PORT}|g" "$NGINX_UPSTREAM_CONFIG"
+sudo tee "$NGINX_UPSTREAM_CONFIG" >/dev/null <<EOF
+upstream current_upstream {
+    server 127.0.0.1:${TARGET_PORT};
+}
+EOF
 sudo nginx -t
 sudo systemctl reload nginx
 
