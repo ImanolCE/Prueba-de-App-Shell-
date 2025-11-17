@@ -1,0 +1,70 @@
+name: Blue-Green Deploy
+
+on:
+  push:
+    branches:
+      - main        # Despliega BLUE (estable)
+      - blue-green  # Despliega GREEN (rama de pruebas)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Determina laa rama y color del despliegue
+
+      - name: Determinar entorno objetivo
+        id: cfg
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+          if [ "$BRANCH" = "main" ]; then
+            echo "target_color=blue" >> $GITHUB_OUTPUT
+          else
+            echo "target_color=green" >> $GITHUB_OUTPUT
+          fi
+
+      #  Prepara el known_hosts para que SSH no pregunte
+      - name: Agregar host al known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      # Se conecta a la VM y se desplega
+      - name: Desplegar en VM Blue/Green
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            # Clonar SOLO la primera vez si no existe
+
+            if [ ! -d /opt/bluegreen-imanol/Prueba-de-App-Shell-/.git ]; then
+              sudo mkdir -p /opt/bluegreen-imanol
+              sudo chown $USER:$USER /opt/bluegreen-imanol
+              git clone https://github.com/ImanolCE/Prueba-de-App-Shell-.git /opt/bluegreen-imanol/Prueba-de-App-Shell-
+            fi
+
+            cd /opt/bluegreen-imanol/Prueba-de-App-Shell-
+
+            # Asegurar que estamos en la misma rama que disparó el workflow
+
+            git fetch origin
+            git checkout ${{ steps.cfg.outputs.branch }}
+            git pull origin ${{ steps.cfg.outputs.branch }}
+
+            # Construir imágenes y levantar contenedores internos
+
+            docker compose up -d --build
+
+            # Ejecutar despliegue Blue/Green 
+
+            bash scripts/deploy_app.sh ${{ steps.cfg.outputs.target_color }}
+
+            # Solo para que se vena los contenedores activos en el log del pipeline
+
+            docker ps
