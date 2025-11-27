@@ -16,7 +16,7 @@ function TopBar(){
     <div className="topbar">
       <div className="brand">
         <div className="logo" />
-        <div>PWA App&nbsp;Shell</div>
+        <div>PWAaaa App&nbsp;Shell</div>
         <span className="badge">Offline Ready</span>
       </div>
       <div className="search">
