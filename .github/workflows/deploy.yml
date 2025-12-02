@@ -3,16 +3,15 @@ name: Blue-Green Deploy
 on:
   push:
     branches:
-      - main        # Despliega BLUE (estable)
-      - blue-green  # Despliega GREEN (rama de pruebas)
+      - main
+      - blue-green
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Determina laa rama y color del despliegue
-
+      # aquii se determina la rama y color del despliegue
       - name: Determinar entorno objetivo
         id: cfg
         run: |
@@ -25,13 +24,13 @@ jobs:
             echo "target_color=green" >> $GITHUB_OUTPUT
           fi
 
-      #  Prepara el known_hosts para que SSH no pregunte
+      # pprepara el known_hosts para que SSH no pregunte
       - name: Agregar host al known_hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      # Se conecta a la VM y se desplega
+      # aqui see conecta a la VM y despliega
       - name: Desplegar en VM Blue/Green
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -42,7 +41,6 @@ jobs:
             set -e
 
             # Clonar SOLO la primera vez si no existe
-
             if [ ! -d /opt/bluegreen-imanol/Prueba-de-App-Shell-/.git ]; then
               sudo mkdir -p /opt/bluegreen-imanol
               sudo chown $USER:$USER /opt/bluegreen-imanol
@@ -51,20 +49,17 @@ jobs:
 
             cd /opt/bluegreen-imanol/Prueba-de-App-Shell-
 
-            # Asegurar que estamos en la misma rama que disparó el workflow
-
+            # para segurar que estamos en la misma rama que disparó el workflow
             git fetch origin
             git checkout ${{ steps.cfg.outputs.branch }}
             git pull origin ${{ steps.cfg.outputs.branch }}
 
-            # Construir imágenes y levantar contenedores internos
+            # Construiye imágenes y levanta los contenedores internos (desde GHCR)
+            docker compose pull
+            docker compose up -d
 
-            docker compose up -d --build
-
-            # Ejecutar despliegue Blue/Green 
-
+            # Ejecuta el dee despliegue Blue/Green
             bash scripts/deploy_app.sh ${{ steps.cfg.outputs.target_color }}
 
-            # Solo para que se vena los contenedores activos en el log del pipeline
-
+            # Solo para que se vean los contenedores activos en el log del pipeline
             docker ps

@@ -18,7 +18,7 @@ if [ "$TARGET_COLOR" != "blue" ] && [ "$TARGET_COLOR" != "green" ]; then
   exit 1
 fi
 
-# ==== Configuración ====
+#  la onfiguración 
 STATE_FILE="/opt/bluegreen-imanol/blue_green_state"
 NGINX_UPSTREAM_CONFIG="/etc/nginx/conf.d/blue_green_upstream.conf"
 
@@ -70,6 +70,6 @@ sudo systemctl reload nginx
 # 5. Guardar estado
 echo "$TARGET_COLOR" | sudo tee "$STATE_FILE" >/dev/null
 
-echo "🚀 Despliegue $TARGET_COLOR completado. Nginx ya apunta a puerto $TARGET_PORT."
+echo " Despliegue $TARGET_COLOR completado. Nginx ya apunta a puerto $TARGET_PORT."
 
 

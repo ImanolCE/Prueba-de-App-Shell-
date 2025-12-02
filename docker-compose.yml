@@ -1,20 +1,14 @@
-version: "3.8"
-
 services:
   blue-app:
-    build:
-      context: .
-      dockerfile: docker/blue/Dockerfile
+    image: ghcr.io/ImanolCE/pwa-blue:latest
     container_name: blue-app
+    restart: always
     ports:
-      - "127.0.0.1:8081:80"   # solo accesible desde la VM
-    restart: unless-stopped
+      - "8081:80"
 
   green-app:
-    build:
-      context: .
-      dockerfile: docker/green/Dockerfile
+    image: ghcr.io/ImanolCE/pwa-green:latest
     container_name: green-app
+    restart: always
     ports:
-      - "127.0.0.1:8082:80"
-    restart: unless-stopped
+      - "8082:80"
