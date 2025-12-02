@@ -1,13 +1,13 @@
 services:
   blue-app:
-    image: ghcr.io/ImanolCE/pwa-blue:latest
+    image: ghcr.io/imanolce/pwa-blue:latest
     container_name: blue-app
     restart: always
     ports:
       - "8081:80"
 
   green-app:
-    image: ghcr.io/ImanolCE/pwa-green:latest
+    image: ghcr.io/imanolce/pwa-green:latest
     container_name: green-app
     restart: always
     ports:

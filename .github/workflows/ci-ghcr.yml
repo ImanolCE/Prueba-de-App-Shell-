@@ -3,7 +3,7 @@ name: Build and Push Blue/Green Images to GHCR
 on:
   push:
     branches:
-      - main   
+      - main
       - blue-green
 
 jobs:
@@ -34,4 +34,5 @@ jobs:
           context: .
           file: ./docker/${{ matrix.color }}/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/pwa-${{ matrix.color }}:latest
+          tags: ghcr.io/imanolce/pwa-${{ matrix.color }}:latest
+          
