@@ -54,6 +54,9 @@ jobs:
             git checkout ${{ steps.cfg.outputs.branch }}
             git pull origin ${{ steps.cfg.outputs.branch }}
 
+            # Login en GHCR para poder hacer pull de las imágenes
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u imanolce --password-stdin
+
             # Construiye imágenes y levanta los contenedores internos (desde GHCR)
             docker compose pull
             docker compose up -d
@@ -61,5 +64,5 @@ jobs:
             # Ejecuta el dee despliegue Blue/Green
             bash scripts/deploy_app.sh ${{ steps.cfg.outputs.target_color }}
 
-            # Solo para que se vean los contenedores activos en el log del pipeline
+            # para que se vean los contenedores activos en el log del pipeline
             docker ps
