@@ -1,0 +1,38 @@
+name: Build and Push Blue/Green Images to GHCR
+
+on:
+  push:
+    branches:
+      - main
+      - blue-green
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        color: [blue, green]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.color }} image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/${{ matrix.color }}/Dockerfile
+          push: true
+          tags: ghcr.io/imanolce/pwa-${{ matrix.color }}:latest
+          
