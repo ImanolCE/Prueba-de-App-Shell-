@@ -1,36 +1,38 @@
 name: Blue-Green Deploy
 
 on:
-  push:
-    branches:
-      - main
-    ##  - blue-green
+  workflow_run:
+    workflows: ["Build and Push Blue/Green Images to GHCR"]
+    types:
+      - completed
 
 jobs:
   deploy:
+
+    # Solo si el workflow de build terminó en success
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      # aquii se determina la rama y color del despliegue
-      - name: Determinar entorno objetivo
-        id: cfg
-        run: |
-          BRANCH="${GITHUB_REF##*/}"
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
-          if [ "$BRANCH" = "main" ]; then
-            echo "target_color=blue" >> $GITHUB_OUTPUT
+      #  Determinar la rama que disparó el build (main o blue-green)
+      - name: Determinar rama origen
+        run: echo "BRANCH=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
+
+      #  quee color desplegar según la rama
+      - name: Determinar color objetivo (blue/green)
+        run: |
+          if [[ "$BRANCH" == "main" ]]; then
+            echo "TARGET_COLOR=blue" >> $GITHUB_ENV
           else
-            echo "target_color=green" >> $GITHUB_OUTPUT
+            echo "TARGET_COLOR=green" >> $GITHUB_ENV
           fi
 
-      # pprepara el known_hosts para que SSH no pregunte
       - name: Agregar host al known_hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      # aqui see conecta a la VM y despliega
       - name: Desplegar en VM Blue/Green
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -49,20 +51,19 @@ jobs:
 
             cd /opt/bluegreen-imanol/Prueba-de-App-Shell-
 
-            # para segurar que estamos en la misma rama que disparó el workflow
+            # Dejar el repo EXACTAMENTE igual que la rama que se construyó
             git fetch origin
-            git checkout main
-            git reset --hard origin/main
+            git checkout "$BRANCH"
+            git reset --hard "origin/$BRANCH"
 
-            # Login en GHCR para poder hacer pull de las imágenes
+            # Login en GHCR con tu PAT
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u imanolce --password-stdin
 
-            # Construiye imágenes y levanta los contenedores internos (desde GHCR)
             docker compose pull
             docker compose up -d
 
-            # Ejecuta el dee despliegue Blue/Green
-            bash scripts/deploy_app.sh ${{ steps.cfg.outputs.target_color }}
+            # Ejecutar despliegue Blue/Green al color calculado
+            bash scripts/deploy_app.sh
 
-            # para que se vean los contenedores activos en el log del pipeline
+            # contenedores activos en el log del pipeline
             docker ps

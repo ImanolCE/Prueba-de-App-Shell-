@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    
+      #- blue-green
 
 jobs:
   # 1) Job de pruebas de integración (Supertest)
@@ -29,7 +29,7 @@ jobs:
   # 2) Job de build + push a GHCR, solo si las pruebas pasaron
   build-and-push:
     runs-on: ubuntu-latest
-    needs: test-api          
+    needs: test-api
     permissions:
       contents: read
       packages: write

@@ -1,75 +1,89 @@
-#!/bin/bash
-# Script principal de despliegue Blue/Green
-# Uso de :
-#   ./scripts/deploy_app.sh blue
-#   ./scripts/deploy_app.sh green
+#!/usr/bin/env bash
+# Script de despliegue Blue/Green con:
+#  - Modo automático (sin parámetros): alterna entre blue/green
+#  - Modo forzado (con parámetro blue|green): usa ese color directamente
+#
+#   ./scripts/deploy_app.sh         # auto toggle
+#   ./scripts/deploy_app.sh blue    # forzar blue
+#   ./scripts/deploy_app.sh green   # forzar green
 
-set -e
+set -euo pipefail
 
-TARGET_COLOR="$1"   # blue o green
-
-if [ -z "$TARGET_COLOR" ]; then
-  echo "Uso: $0 {blue|green}"
-  exit 1
-fi
-
-if [ "$TARGET_COLOR" != "blue" ] && [ "$TARGET_COLOR" != "green" ]; then
-  echo "Color inválido: $TARGET_COLOR (usa blue o green)"
-  exit 1
-fi
-
-#  la onfiguración 
 STATE_FILE="/opt/bluegreen-imanol/blue_green_state"
 NGINX_UPSTREAM_CONFIG="/etc/nginx/conf.d/blue_green_upstream.conf"
 
-if [ "$TARGET_COLOR" = "blue" ]; then
+# Leer parámetro opcional
+FORCED_COLOR="${1:-}"   # puede ser "", "blue" o "green"
+
+echo "======================================="
+echo "   Despliegue Blue/Green"
+echo "   Parámetro recibido: '${FORCED_COLOR:-<none>}'"
+echo "======================================="
+
+#  Leer color actual (por defecto 'blue' si no hay archivo)
+CURRENT_COLOR="blue"
+if [[ -f "$STATE_FILE" ]]; then
+  CURRENT_COLOR="$(tr -d '\n\r' < "$STATE_FILE")"
+fi
+
+if [[ "$CURRENT_COLOR" != "blue" && "$CURRENT_COLOR" != "green" ]]; then
+  echo "Valor de estado inválido en $STATE_FILE: '$CURRENT_COLOR', usando 'blue' por defecto."
+  CURRENT_COLOR="blue"
+fi
+
+#  Determinar TARGET_COLOR
+if [[ -n "$FORCED_COLOR" ]]; then
+  # Modo forzado
+  if [[ "$FORCED_COLOR" != "blue" && "$FORCED_COLOR" != "green" ]]; then
+    echo "Color inválido: $FORCED_COLOR (usa blue o green)"
+    exit 1
+  fi
+  TARGET_COLOR="$FORCED_COLOR"
+  echo "Modo FORZADO → TARGET_COLOR = $TARGET_COLOR"
+else
+  if [[ "$CURRENT_COLOR" == "blue" ]]; then
+    TARGET_COLOR="green"
+  else
+    TARGET_COLOR="blue"
+  fi
+  echo "Modo AUTO → CURRENT_COLOR = $CURRENT_COLOR, TARGET_COLOR = $TARGET_COLOR"
+fi
+
+# Puerto según el color
+if [[ "$TARGET_COLOR" == "blue" ]]; then
   TARGET_PORT=8081
 else
   TARGET_PORT=8082
 fi
 
-echo "======================================="
-echo " Iniciando despliegue $TARGET_COLOR"
-echo " Puerto objetivo: $TARGET_PORT"
-echo "======================================="
+echo " Usando puerto interno: $TARGET_PORT"
+echo "---------------------------------------"
 
-# 1. Estado actual (si existe)
-if [ -f "$STATE_FILE" ]; then
-  CURRENT_COLOR=$(cat "$STATE_FILE")
-else
-  CURRENT_COLOR="blue"
-fi
-
-echo "Color actual asumido: $CURRENT_COLOR"
-
-# 2. Build + levantar contenedor objetivo (interno)
-echo " Construyendo y levantando app-$TARGET_COLOR ..."
-docker compose build "${TARGET_COLOR}-app"
-docker compose up -d "${TARGET_COLOR}-app"
-
-# 3. Smoke del test sobre el puerto interno (no público)
-echo " Ejecutando Smoke Test contra http://127.0.0.1:$TARGET_PORT ..."
-if ! curl -fsS "http://127.0.0.1:$TARGET_PORT" > /dev/null; then
-  echo " ERROR: Smoke test falló para app-$TARGET_COLOR"
-  echo "   Haciendo rollback (apagando app-$TARGET_COLOR)..."
-  docker stop "app-$TARGET_COLOR" || true
+# Smoke test contra el target
+echo " Ejecutando Smoke Test contra http://127.0.0.1:${TARGET_PORT}/ ..."
+if ! curl -fsS "http://127.0.0.1:${TARGET_PORT}/" > /dev/null; then
+  echo " ERROR: Smoke test falló para $TARGET_COLOR (puerto $TARGET_PORT)."
+  echo "   Se mantiene activo el color anterior: $CURRENT_COLOR"
   exit 1
 fi
-echo " Smoke test exitoso"
+echo " Smoke test exitoso en $TARGET_COLOR"
+echo "---------------------------------------"
 
-# 4. Actualizar el Nginx para apuntar al nuevo upstream
-echo " Actualizando Nginx para apuntar a app-$TARGET_COLOR ..."
+# Actualizar upstream de Nginx
+echo " Actualizando Nginx para apuntar a app-$TARGET_COLOR en el puerto $TARGET_PORT ..."
 sudo tee "$NGINX_UPSTREAM_CONFIG" >/dev/null <<EOF
 upstream current_upstream {
     server 127.0.0.1:${TARGET_PORT};
 }
 EOF
+
 sudo nginx -t
 sudo systemctl reload nginx
 
-# 5. Guardar estado
+#  Guardar nuevo estado
 echo "$TARGET_COLOR" | sudo tee "$STATE_FILE" >/dev/null
 
-echo " Despliegue $TARGET_COLOR completado. Nginx ya apunta a puerto $TARGET_PORT."
-
-
+echo " Despliegue $TARGET_COLOR completado."
+echo "   Nginx ya apunta a puerto $TARGET_PORT."
+echo "   Estado actualizado en $STATE_FILE."
+echo "======================================="
