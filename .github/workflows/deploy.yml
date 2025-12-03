@@ -35,14 +35,33 @@ jobs:
 
       - name: Desplegar en VM Blue/Green
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          
+          BRANCH: ${{ github.ref_name }}
+        
+          TARGET_COLOR: ${{ steps.select-color.outputs.target_color }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          
+          envs: BRANCH,TARGET_COLOR
           script: |
             set -e
 
-            # Clonar SOLO la primera vez si no existe
+            echo ">>> BRANCH recibido: $BRANCH"
+            echo ">>> TARGET_COLOR recibido: $TARGET_COLOR"
+
+            if [ -z "$BRANCH" ]; then
+              echo "ERROR: BRANCH está vacío"; exit 1;
+            fi
+
+            if [ -z "$TARGET_COLOR" ]; then
+              echo "ERROR: TARGET_COLOR está vacío"; exit 1;
+            fi
+
+            # 1) Clonar SOLO la primera vez
             if [ ! -d /opt/bluegreen-imanol/Prueba-de-App-Shell-/.git ]; then
               sudo mkdir -p /opt/bluegreen-imanol
               sudo chown $USER:$USER /opt/bluegreen-imanol
@@ -51,19 +70,52 @@ jobs:
 
             cd /opt/bluegreen-imanol/Prueba-de-App-Shell-
 
-            # Dejar el repo EXACTAMENTE igual que la rama que se construyó
+            # Dejar el repo EXACTO a la rama que disparó el workflow
             git fetch origin
             git checkout "$BRANCH"
             git reset --hard "origin/$BRANCH"
 
-            # Login en GHCR con tu PAT
+            #  Login en GHCR con tu PAT
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u imanolce --password-stdin
 
+            # Traer imágenes y levantar contenedores
             docker compose pull
             docker compose up -d
 
-            # Ejecutar despliegue Blue/Green al color calculado
-            bash scripts/deploy_app.sh
+            # Ejecutar Blue/Green al color calculado
+            bash scripts/deploy_app.sh "$TARGET_COLOR"
 
-            # contenedores activos en el log del pipeline
+            # Mostrar contenedores activos
             docker ps
+
+            uses: appleboy/ssh-action@v1.0.3
+            with:
+              host: ${{ secrets.SSH_HOST }}
+              username: ${{ secrets.SSH_USER }}
+              key: ${{ secrets.SSH_PRIVATE_KEY }}
+              script: |
+                set -e
+
+                # Clonar SOLO la primera vez si no existe
+                if [ ! -d /opt/bluegreen-imanol/Prueba-de-App-Shell-/.git ]; then
+                  sudo mkdir -p /opt/bluegreen-imanol
+                  sudo chown $USER:$USER /opt/bluegreen-imanol
+                  git clone https://github.com/ImanolCE/Prueba-de-App-Shell-.git /opt/bluegreen-imanol/Prueba-de-App-Shell-
+                fi
+
+                cd /opt/bluegreen-imanol/Prueba-de-App-Shell-
+
+                # Dejar el repo EXACTAMENTE igual que la rama que se construyó
+                git fetch origin
+                git checkout "$BRANCH"
+                git reset --hard "origin/$BRANCH"
+
+                # Login en GHCR con tu PAT
+                echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u imanolce --password-stdin
+
+                docker compose pull
+                docker compose up -d
+
+                bash scripts/deploy_app.sh
+
+                docker ps
