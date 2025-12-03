@@ -13,7 +13,7 @@ app.use(express.json());
 // Endpoint 1: health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({
-    status: 'OsssK',
+    status: 'OK',
     service: 'pwa-app-shell-api',
   });
 });
