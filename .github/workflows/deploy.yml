@@ -52,7 +52,7 @@ jobs:
             # para segurar que estamos en la misma rama que disparó el workflow
             git fetch origin
             git checkout ${{ steps.cfg.outputs.branch }}
-            git pull origin ${{ steps.cfg.outputs.branch }}
+            git reset --hard origin/main ${{ steps.cfg.outputs.branch }}
 
             # Login en GHCR para poder hacer pull de las imágenes
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u imanolce --password-stdin

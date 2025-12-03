@@ -41,7 +41,7 @@ function SideBar(){
     <aside className="sidebar">
       <nav className="nav">
         <NavLink href="#/inicio"  label="Inicio" />
-        <NavLink href="#/productos"  label="ProductosSSSS - 56" />
+        <NavLink href="#/productos"  label="ProductosSSSS - 58" />
         <NavLink href="#/acerca"  label="Acerca" />
       </nav>
     </aside>
@@ -135,6 +135,7 @@ function Acerca(){
         <p className="mt8">App Shell cacheado, manifest para instalación y soporte offline mediante Service Worker.</p>
       </section>
     </div>
+
   )
 }
 
@@ -156,7 +157,7 @@ export default function App(){
       <SideBar/>
       <TabBar/>
       <main className="main">{View}</main>
-      <footer className="footer">Actividad 3: PWA - Prueba </footer>
+      <footer className="footer">Actividad 3: PWaA - Prueba </footer>
     </div>
   )
 }
