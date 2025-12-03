@@ -41,7 +41,7 @@ function SideBar(){
     <aside className="sidebar">
       <nav className="nav">
         <NavLink href="#/inicio"  label="Inicio" />
-        <NavLink href="#/productos"  label="Productos gratis" />
+        <NavLink href="#/productos"  label="Productos" />
         <NavLink href="#/acerca"  label="Acerca" />
       </nav>
     </aside>
@@ -52,7 +52,7 @@ function TabBar(){
   return (
     <div className="tabbar">
       <NavLink href="#/inicio"  label="Inicio" />
-      <NavLink href="#/productos"  label="Productos 45" />
+      <NavLink href="#/productos"  label="Productos" />
       <NavLink href="#/acerca" label="Acerca" />
     </div>
   )
@@ -62,7 +62,7 @@ function Inicio(){
   return (
     <div className="container">
       <section className="card">
-        <h2 className="m0">Bienvenidooooooo !! </h2>
+        <h2 className="m0">Bienvenidooooooos de nuevo !! </h2>
         
         <div className="flex justify-between mt16">
           <span className="badge">PWA</span>
