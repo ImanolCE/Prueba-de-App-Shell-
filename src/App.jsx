@@ -41,7 +41,7 @@ function SideBar(){
     <aside className="sidebar">
       <nav className="nav">
         <NavLink href="#/inicio"  label="Inicio" />
-        <NavLink href="#/productos"  label="Productos - prueba" />
+        <NavLink href="#/productos"  label="Productos - pruebassss" />
         <NavLink href="#/acerca"  label="Acerca" />
       </nav>
     </aside>
