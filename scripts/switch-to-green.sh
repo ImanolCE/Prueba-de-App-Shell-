@@ -1,10 +1,11 @@
 #!/bin/bash
+# Cambia el tráfico a la app GREEN usando el script principal de despliegue
+
 set -e
 
-sed -i 's|server green-app:80;|# server green-app:80;|g' nginx-proxy.conf
-sed -i 's|# server green-app:80;|server green-app:80;|g' nginx-proxy.conf
-sed -i 's|server blue-app:80;|# server blue-app:80;|g' nginx-proxy.conf
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-docker compose restart nginx-proxy
+cd "$PROJECT_ROOT"
 
-echo " Entorno GREEN activo"
+bash scripts/deploy_app.sh green

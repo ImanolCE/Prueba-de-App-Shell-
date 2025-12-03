@@ -18,7 +18,7 @@ function TopBar(){
     <div className="topbar">
       <div className="brand">
         <div className="logo" />
-        <div>PWA App&nbsp;Shell</div>
+        <div>PWAaaa App&nbsp;Shell</div>
         <span className="badge">Offline Ready</span>
         {/* etiqueta con la versión */}
         <span className="version-pill">
@@ -62,7 +62,7 @@ function Inicio(){
   return (
     <div className="container">
       <section className="card">
-        <h2 className="m0">Bienvenido !! </h2>
+        <h2 className="m0">Bienvenidooooooo !! </h2>
         
         <div className="flex justify-between mt16">
           <span className="badge">PWA</span>
@@ -156,7 +156,7 @@ export default function App(){
       <SideBar/>
       <TabBar/>
       <main className="main">{View}</main>
-      <footer className="footer">Actividad 3: PWA - Prueba de App Shell </footer>
+      <footer className="footer">Actividad 3: PWA - Prueba </footer>
     </div>
   )
 }

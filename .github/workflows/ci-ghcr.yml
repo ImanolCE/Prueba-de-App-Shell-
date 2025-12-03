@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - blue-green
+    
 
 jobs:
   # 1) Job de pruebas de integración (Supertest)

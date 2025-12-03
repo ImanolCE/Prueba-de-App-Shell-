@@ -1,10 +1,14 @@
 #!/bin/bash
+# Cambia el tráfico a la app BLUE usando el script principal de despliegue
+
 set -e
 
-sed -i 's|server blue-app:80;|# server blue-app:80;|g' nginx-proxy.conf
-sed -i 's|# server blue-app:80;|server blue-app:80;|g' nginx-proxy.conf
-sed -i 's|server green-app:80;|# server green-app:80;|g' nginx-proxy.conf
+# Ruta absoluta al directorio del script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-docker compose restart nginx-proxy
+# Ir a la raíz del proyecto (donde está docker-compose.yml)
+cd "$PROJECT_ROOT"
 
-echo " Entorno BLUE activo"
+# Ejecutar despliegue hacia BLUE
+bash scripts/deploy_app.sh blue
