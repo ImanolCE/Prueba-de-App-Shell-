@@ -52,7 +52,7 @@ function TabBar(){
   return (
     <div className="tabbar">
       <NavLink href="#/inicio"  label="Inicio" />
-      <NavLink href="#/productos"  label="Productos" />
+      <NavLink href="#/productos"  label="Productos 45" />
       <NavLink href="#/acerca" label="Acerca" />
     </div>
   )
