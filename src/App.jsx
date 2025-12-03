@@ -62,7 +62,7 @@ function Inicio(){
   return (
     <div className="container">
       <section className="card">
-        <h2 className="m0">Bienvenido !! </h2>
+        <h2 className="m0">Bienvenidooooooo !! </h2>
         
         <div className="flex justify-between mt16">
           <span className="badge">PWA</span>
