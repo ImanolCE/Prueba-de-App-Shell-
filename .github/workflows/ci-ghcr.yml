@@ -3,20 +3,25 @@ name: Build and Push Blue/Green Images to GHCR
 on:
   push:
     branches: [ main ]
+    paths:
+      - "src/**"
+      - "api/**"
+      - "docker/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.js"
+      - "jest.config.cjs"
   workflow_dispatch:
 
 jobs:
   test-build-and-push:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      packages: write
-
     env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME_BLUE: ghcr.io/${{ github.repository_owner }}/pwa-blue
-      IMAGE_NAME_GREEN: ghcr.io/${{ github.repository_owner }}/pwa-green
+      OWNER: imanolce
+      IMAGE_BLUE: ghcr.io/imanolce/pwa-blue:latest
+      IMAGE_GREEN: ghcr.io/imanolce/pwa-green:latest
 
     steps:
       - name: Checkout repo
@@ -26,33 +31,33 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: npm
 
       - name: Install deps
         run: npm ci
 
       - name: Run integration tests (Supertest)
-        run: npm test
+        run: npm test -- --runInBand
 
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ env.OWNER }}
           password: ${{ secrets.GHCR_PAT }}
 
       - name: Build and push BLUE image
         run: |
           docker build \
             -f docker/blue/Dockerfile \
-            -t "$IMAGE_NAME_BLUE:latest" \
+            -t $IMAGE_BLUE \
             .
-          docker push "$IMAGE_NAME_BLUE:latest"
+          docker push $IMAGE_BLUE
 
       - name: Build and push GREEN image
         run: |
           docker build \
             -f docker/green/Dockerfile \
-            -t "$IMAGE_NAME_GREEN:latest" \
+            -t $IMAGE_GREEN \
             .
-          docker push "$IMAGE_NAME_GREEN:latest"
+          docker push $IMAGE_GREEN
