@@ -157,7 +157,7 @@ export default function App(){
       <SideBar/>
       <TabBar/>
       <main className="main">{View}</main>
-      <footer className="footer">Actividad 3: PWaA - Prueba - 345 . otra vez</footer>
+      <footer className="footer">Actividad 3: PWaA - Prueba - 345 . cambio 9:49</footer>
     </div>
   )
 }
