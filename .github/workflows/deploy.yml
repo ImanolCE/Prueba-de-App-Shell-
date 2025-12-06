@@ -1,20 +1,27 @@
 name: Blue-Green Deploy
 
 on:
+  workflow_run:
+    workflows: ["Build and Push Blue/Green Images to GHCR"]
+    types: [completed]
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up job
-        run: echo "Iniciando Blue-Green Deploy para ${{ github.ref_name }}"
+      - name: Info del evento
+        run: |
+          echo "Evento: ${{ github.event_name }}"
+          echo "Workflow previo: ${{ github.event.workflow_run.name || 'N/A' }}"
+          echo "Conclusión: ${{ github.event.workflow_run.conclusion || 'N/A' }}"
 
-      - name: Desplegar en VM Blue/Green
+      - name: Desplegar en VM (Blue/Green)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -24,37 +31,29 @@ jobs:
           script: |
             set -e
 
-            # Obtener la rama directamente del contexto de GitHub
-            BRANCH="${{ github.ref_name }}"
-            echo ">>> BRANCH recibido: $BRANCH"
-
-            if [ -z "$BRANCH" ]; then
-              echo "ERROR: BRANCH está vacío"; exit 1;
-            fi
-
-            # 1) Clonar SOLO la primera vez si no existe
+            # Clonar SOLO la primera vez si no existe
             if [ ! -d /opt/bluegreen-imanol/Prueba-de-App-Shell-/.git ]; then
               sudo mkdir -p /opt/bluegreen-imanol
               sudo chown $USER:$USER /opt/bluegreen-imanol
-              git clone https://github.com/ImanolCE/Prueba-de-App-Shell-.git /opt/bluegreen-imanol/Prueba-de-App-Shell-
+              git clone https://github.com/${{ github.repository }} /opt/bluegreen-imanol/Prueba-de-App-Shell-
             fi
 
             cd /opt/bluegreen-imanol/Prueba-de-App-Shell-
 
-            # 2) Dejar el repo EXACTAMENTE igual que la rama que disparó el workflow
+            # Dejar el repo igualito que main
             git fetch origin
-            git checkout "$BRANCH"
-            git reset --hard "origin/$BRANCH"
+            git checkout main
+            git reset --hard origin/main
 
-            # 3) Login en GHCR con tu PAT
-            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u imanolce --password-stdin
+            # Login GHCR
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
 
-            # 4) Traer imágenes y levantar contenedores
+            # Traer últimas imágenes y levantar contenedores
             docker compose pull
             docker compose up -d
 
-            # 5) Despliegue Blue/Green (AUTO alterna azul/verde)
+            # Ejecutar despliegue Blue/Green (auto alterna)
             bash scripts/deploy_app.sh
 
-            # 6) Mostrar contenedores activos
+            # Ver contenedores activos
             docker ps
