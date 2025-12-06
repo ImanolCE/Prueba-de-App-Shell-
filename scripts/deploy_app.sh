@@ -2,17 +2,13 @@
 # Script de despliegue Blue/Green con:
 #  - Modo automático (sin parámetros): alterna entre blue/green
 #  - Modo forzado (con parámetro blue|green): usa ese color directamente
-#
-#   ./scripts/deploy_app.sh         # auto toggle
-#   ./scripts/deploy_app.sh blue    # forzar blue
-#   ./scripts/deploy_app.sh green   # forzar green
 
 set -euo pipefail
 
 STATE_FILE="/opt/bluegreen-imanol/blue_green_state"
 NGINX_UPSTREAM_CONFIG="/etc/nginx/conf.d/blue_green_upstream.conf"
 
-# Leer parámetro opcional
+
 FORCED_COLOR="${1:-}"   # puede ser "", "blue" o "green"
 
 echo "======================================="
@@ -20,7 +16,7 @@ echo "   Despliegue Blue/Green"
 echo "   Parámetro recibido: '${FORCED_COLOR:-<none>}'"
 echo "======================================="
 
-#  Leer color actual (por defecto 'blue' si no hay archivo)
+# Leer color actual 
 CURRENT_COLOR="blue"
 if [[ -f "$STATE_FILE" ]]; then
   CURRENT_COLOR="$(tr -d '\n\r' < "$STATE_FILE")"
@@ -31,7 +27,7 @@ if [[ "$CURRENT_COLOR" != "blue" && "$CURRENT_COLOR" != "green" ]]; then
   CURRENT_COLOR="blue"
 fi
 
-#  Determinar TARGET_COLOR
+# Determinar TARGET_COLOR
 if [[ -n "$FORCED_COLOR" ]]; then
   # Modo forzado
   if [[ "$FORCED_COLOR" != "blue" && "$FORCED_COLOR" != "green" ]]; then
@@ -41,6 +37,7 @@ if [[ -n "$FORCED_COLOR" ]]; then
   TARGET_COLOR="$FORCED_COLOR"
   echo "Modo FORZADO → TARGET_COLOR = $TARGET_COLOR"
 else
+  # Modo automático: alternar
   if [[ "$CURRENT_COLOR" == "blue" ]]; then
     TARGET_COLOR="green"
   else
@@ -80,7 +77,7 @@ EOF
 sudo nginx -t
 sudo systemctl reload nginx
 
-#  Guardar nuevo estado
+# Guardar nuevo estado
 echo "$TARGET_COLOR" | sudo tee "$STATE_FILE" >/dev/null
 
 echo " Despliegue $TARGET_COLOR completado."
