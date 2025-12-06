@@ -41,7 +41,7 @@ function SideBar(){
     <aside className="sidebar">
       <nav className="nav">
         <NavLink href="#/inicio"  label="Inicio" />
-        <NavLink href="#/productos"  label="Productos" />
+        <NavLink href="#/productos"  label="Productos (gratis)" />
         <NavLink href="#/acerca"  label="Acerca" />
       </nav>
     </aside>
@@ -62,7 +62,7 @@ function Inicio(){
   return (
     <div className="container">
       <section className="card">
-        <h2 className="m0">Bienvenidooooooos de nuevo !! </h2>
+        <h2 className="m0">Bienvenidooooooos de nuevo  ?? </h2>
         
         <div className="flex justify-between mt16">
           <span className="badge">PWA</span>
@@ -157,7 +157,7 @@ export default function App(){
       <SideBar/>
       <TabBar/>
       <main className="main">{View}</main>
-      <footer className="footer">Actividad 3: PWaA - Prueba </footer>
+      <footer className="footer">Actividad 3: PWaA - Prueba - 345 . otra vez</footer>
     </div>
   )
 }
