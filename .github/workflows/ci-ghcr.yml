@@ -11,6 +11,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - "vite.config.js"
+    
       - "jest.config.cjs"
   workflow_dispatch:
 
@@ -19,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      # IMPORTANTE: todo en minúsculas
       OWNER: imanolce
       IMAGE_BLUE: ghcr.io/imanolce/pwa-blue:latest
       IMAGE_GREEN: ghcr.io/imanolce/pwa-green:latest
@@ -30,7 +32,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
 
       - name: Install deps
@@ -40,24 +42,18 @@ jobs:
         run: npm test -- --runInBand
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ env.OWNER }}
-          password: ${{ secrets.GHCR_PAT }}
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ env.OWNER }}" --password-stdin
 
       - name: Build and push BLUE image
         run: |
           docker build \
-            -f docker/blue/Dockerfile \
-            -t $IMAGE_BLUE \
-            .
-          docker push $IMAGE_BLUE
+            -t "$IMAGE_BLUE" \
+            -f docker/blue/Dockerfile .
+          docker push "$IMAGE_BLUE"
 
       - name: Build and push GREEN image
         run: |
           docker build \
-            -f docker/green/Dockerfile \
-            -t $IMAGE_GREEN \
-            .
-          docker push $IMAGE_GREEN
+            -t "$IMAGE_GREEN" \
+            -f docker/green/Dockerfile .
+          docker push "$IMAGE_GREEN"
