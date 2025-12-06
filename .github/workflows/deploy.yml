@@ -16,8 +16,6 @@ jobs:
 
       - name: Desplegar en VM Blue/Green
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          BRANCH: ${{ github.ref_name }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -26,6 +24,8 @@ jobs:
           script: |
             set -e
 
+            # Obtener la rama directamente del contexto de GitHub
+            BRANCH="${{ github.ref_name }}"
             echo ">>> BRANCH recibido: $BRANCH"
 
             if [ -z "$BRANCH" ]; then
